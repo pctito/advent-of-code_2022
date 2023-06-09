@@ -1,40 +1,9 @@
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead};
+use std::num::ParseIntError;
 use std::path::Path;
 use uuid::Uuid;
-
-pub fn result() {
-    let map_result = map_from_file("./day1/input.txt");
-    match map_result {
-        Ok(mut map) => {
-            let mut key_max = String::new();
-            let mut sum_max = i32::MIN;
-
-            for (key, values) in map.iter_mut() {
-                let sum = values
-                    .iter_mut()
-                    .map(|s| s.parse::<i32>().unwrap())
-                    .sum::<i32>();
-
-                if sum > sum_max {
-                    key_max = key.clone();
-                    sum_max = sum;
-                }
-            }
-
-            if sum_max == i32::MIN {
-                println!("The map is empty.");
-            } else {
-                println!(
-                    "The key with the maximum sum is {}, with a sum of {} calories.",
-                    key_max, sum_max
-                );
-            }
-        }
-        Err(e) => eprintln!("Error: {}", e),
-    }
-}
 
 pub fn map_from_file<P>(file: P) -> io::Result<HashMap<String, Vec<String>>>
 where
@@ -60,13 +29,15 @@ where
             current_values.push(trimmed_line.to_string());
         }
     }
+
     if let Some(key) = current_key {
         map.insert(key, current_values);
     }
+
     Ok(map)
 }
 
-fn read_lines_into_buffer<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
+pub fn read_lines_into_buffer<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
 where
     P: AsRef<Path>,
 {
@@ -77,4 +48,21 @@ where
 fn gen_key(length: usize) -> String {
     let key = Uuid::new_v4().to_string();
     key.chars().take(length).collect()
+}
+
+pub fn parse_map_values(
+    map: &mut HashMap<String, Vec<String>>,
+) -> Result<HashMap<String, Vec<i32>>, ParseIntError> {
+    let updated_map = map
+        .drain()
+        .map(|(k, v)| {
+            let parsed_vec = v.into_iter().map(|s| s.parse::<i32>()).collect();
+            match parsed_vec {
+                Ok(v) => Ok((k, v)),
+                Err(e) => Err(e),
+            }
+        })
+        .collect::<Result<HashMap<String, Vec<i32>>, ParseIntError>>()?;
+
+    Ok(updated_map)
 }

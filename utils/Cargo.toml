@@ -1,13 +1,12 @@
 [package]
-name = "day1"
+name = "utils"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[[bin]]
-name = "day1"
-path = "src/solution.rs"
+[lib]
+name = "utils"
+path = "src/lib.rs"
 
 [dependencies]
-uuid = {workspace = true}
-utils = {path = "../utils"}
+uuid = { workspace = true }
